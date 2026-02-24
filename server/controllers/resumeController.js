@@ -15,7 +15,8 @@ export const createResume = async (req, res) => {
         // Create new Resume
         const newResume = await Resume.create({
             userId,
-            title
+            title,
+            isDraft: true
         })
 
         // Return success message
@@ -101,34 +102,89 @@ export const updateResume = async (req, res) => {
         const image = req.file;
 
         let resumeDataCopy;
-        if(typeof resumeData === 'string'){
+        if (typeof resumeData === 'string') {
             resumeDataCopy = await JSON.parse(resumeData)
         } else {
             resumeDataCopy = structuredClone(resumeData)
         }
 
         if (image) {
-
             const imageBufferData = fs.createReadStream(image.path)
-
             const response = await imagekit.files.upload({
                 file: imageBufferData,
                 fileName: 'resume.png',
                 folder: 'user-resumes',
                 transformation: {
-                    pre: 'w-300, h-300, fo-face, z-0.75' + (removeBackground ? ',e-bgremove' : ''),
+                    pre: 'w-300, h-300, fo-face, z-0.75' + (removeBackground === 'yes' ? ',e-bgremove' : ''),
                 }
             });
-
+            if (!resumeDataCopy.personal_info) resumeDataCopy.personal_info = {};
             resumeDataCopy.personal_info.image = response.url;
+        } else if (resumeDataCopy.personal_info?.image && resumeDataCopy.personal_info.image.includes('ik.imagekit.io')) {
+            // Retroactively add/remove background removal transformation if it's an ImageKit URL
+            let imageUrl = resumeDataCopy.personal_info.image;
+            if (removeBackground === 'yes') {
+                if (!imageUrl.includes('e-bgremove')) {
+                    imageUrl = imageUrl.includes('?') ? `${imageUrl},e-bgremove` : `${imageUrl}?tr=e-bgremove`;
+                }
+            } else {
+                imageUrl = imageUrl.replace(/[,]?e-bgremove/, '').replace(/\?tr=$/, '');
+            }
+            resumeDataCopy.personal_info.image = imageUrl;
         }
 
-        const resume = await Resume.findByIdAndUpdate({ userId, _id: resumeId }, resumeDataCopy, {
+        resumeDataCopy.isDraft = false;
+
+        const resume = await Resume.findOneAndUpdate({ userId, _id: resumeId }, resumeDataCopy, {
             new: true
         })
 
         return res.status(200).json({ message: "Saved successfully", resume });
 
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+}
+
+// get all public resumes
+// GET: /api/resumes/public
+export const getPublicResumes = async (req, res) => {
+    try {
+        const resumes = await Resume.find({ public: true })
+            .sort({ updatedAt: -1 })
+            .select('title template accent_color personal_info professional_summary updatedAt')
+            .limit(24);
+
+        return res.status(200).json({ resumes });
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+}
+
+// clone public resume to logged-in user
+// POST: /api/resumes/public/:resumeId/clone
+export const clonePublicResume = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { resumeId } = req.params;
+
+        const sourceResume = await Resume.findOne({ _id: resumeId, public: true }).lean();
+
+        if (!sourceResume) {
+            return res.status(404).json({ message: 'Public resume not found' });
+        }
+
+        const { _id, __v, createdAt, updatedAt, ...resumeData } = sourceResume;
+
+        const clonedResume = await Resume.create({
+            ...resumeData,
+            userId,
+            public: false,
+            isDraft: true,
+            title: sourceResume.title ? `Copy of ${sourceResume.title}` : 'Copied Resume'
+        });
+
+        return res.status(201).json({ message: 'Resume copied successfully', resume: clonedResume });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }

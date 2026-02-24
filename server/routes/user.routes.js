@@ -1,13 +1,15 @@
 import express from 'express';
-import { getUserById, getUsersResumes, loginUser, registerUser } from '../controllers/user.controller.js';
+import { getUserById, getUsersResumes, sendLoginOTP, verifyOTP, googleLogin, trackDownload } from '../controllers/user.controller.js';
 import protect from '../middlewares/authMiddleware.js';
 
 const userRouter = express.Router();
 
 
-userRouter.post('/register', registerUser);
-userRouter.post('/login', loginUser);
+userRouter.post('/send-otp', sendLoginOTP);
+userRouter.post('/verify-otp', verifyOTP);
+userRouter.post('/google-login', googleLogin);
 userRouter.get('/data', protect, getUserById);
 userRouter.get('/resumes', protect, getUsersResumes);
+userRouter.post('/track-download', protect, trackDownload);
 
 export default userRouter;

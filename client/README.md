@@ -1,16 +1,71 @@
-# React + Vite
+# Client (Frontend) - AI Resume Builder
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for building, editing, importing, and previewing resumes.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `npm run dev` - start development server
+- `npm run build` - production build
+- `npm run preview` - preview production build locally
+- `npm run lint` - run ESLint
 
-## React Compiler
+## Required Environment Variables
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Create `client/.env`:
 
-## Expanding the ESLint configuration
+```env
+VITE_BASE_URL=http://localhost:3000/api
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Install and Run
+
+```bash
+npm install
+npm run dev
+```
+
+App runs on `http://localhost:5173` by default.
+
+## Backend Connection
+
+Axios is configured in `src/configs/api.js`:
+- Uses `VITE_BASE_URL` as API base
+- Automatically sends `Authorization` header from `localStorage.getItem('token')`
+
+Important: backend expects raw token in `Authorization` header (not `Bearer <token>`).
+
+## Main API Groups Used by Frontend
+
+- `/users` - OTP login, Google login, current user, user resumes, download tracking
+- `/resumes` - create, update, delete, get by id, public resumes, clone public resume
+- `/ai` - enhance summary, enhance job description, upload/import resume text
+- `/payments` - create order and verify payment
+- `/contact` - send contact form message
+- `/admin` - user and template management (admin only)
+
+For complete endpoint payloads and responses, see `../server/README.md`.
+
+## Local Full-Stack Run
+
+From project root, run both apps in separate terminals:
+
+Terminal 1:
+```bash
+cd server
+npm run server
+```
+
+Terminal 2:
+```bash
+cd client
+npm run dev
+```
+
+## Troubleshooting
+
+- `Network Error` / CORS: ensure backend is running and CORS allows `http://localhost:5173`.
+- `401 Unauthorized`: login first and verify `token` exists in `localStorage`.
+- Google login issues: verify `VITE_GOOGLE_CLIENT_ID` matches backend `GOOGLE_CLIENT_ID`.
+- Payment issues: verify `VITE_RAZORPAY_KEY_ID` and backend Razorpay keys are configured.

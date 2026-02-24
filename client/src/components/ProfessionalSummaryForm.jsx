@@ -26,52 +26,53 @@ const ProfessionalSummaryForm = ({ data, onChange, setResumeData }) => {
     }
 
     return (
-        <div className='flex flex-col gap-6 h-full'>
-            <div className="space-y-1">
-                <h2 className="text-2xl font-bold text-slate-800">Professional Summary</h2>
-                <p className="text-sm text-slate-500">Craft a compelling introduction for your resume.</p>
+        <div className='flex flex-col gap-8 h-full font-sans'>
+            <div className="space-y-2">
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">Professional Summary</h2>
+                <p className="text-sm font-medium text-slate-500 italic tracking-tight">"Your summary is your handshake with the employer. Make it firm."</p>
             </div>
 
             {/* AI Assistant Banner */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 p-6 text-white shadow-xl shadow-indigo-200">
-                <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+            <div className="relative overflow-hidden rounded-xl bg-slate-900 p-8 text-white shadow-2xl shadow-slate-900/20 group">
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-orange-500 opacity-20 rounded-full blur-3xl group-hover:opacity-40 transition-opacity duration-700"></div>
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary-accent opacity-10 rounded-full blur-2xl group-hover:opacity-30 transition-opacity duration-700"></div>
 
-                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-indigo-100 font-semibold text-xs uppercase tracking-wider">
-                            <Sparkles className="size-3.5 text-yellow-300" />
-                            AI Powered
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2.5 text-orange-400 font-black text-[10px] uppercase tracking-[0.2em] mb-1">
+                            <Sparkles className="size-4 animate-pulse" />
+                            Intelligence Layer
                         </div>
-                        <h3 className="font-bold text-lg leading-tight">Refine with AI</h3>
-                        <p className="text-xs text-indigo-100/80 max-w-xs">
-                            Write a rough draft, and let our AI polish the tone, grammar, and impact.
+                        <h3 className="font-black text-2xl leading-tight tracking-tight">Polish with Resumefy AI</h3>
+                        <p className="text-sm text-slate-300 max-w-sm font-medium leading-relaxed">
+                            We'll transform your basic notes into a high-impact professional narrative.
                         </p>
                     </div>
 
                     <button
                         onClick={generateSummary}
                         disabled={isGenerating || !data}
-                        className='group shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-indigo-700 text-sm font-bold rounded-xl hover:bg-indigo-50 active:scale-95 disabled:opacity-70 disabled:scale-100 transition-all shadow-sm'
+                        className='group shrink-0 flex items-center justify-center gap-3 px-8 py-4 bg-primary-accent text-white text-sm font-black rounded-xl hover:shadow-xl hover:shadow-orange-500/30 active:scale-95 disabled:opacity-30 disabled:scale-100 transition-all'
                     >
                         {isGenerating ? (
-                            <Loader2 className='size-4 animate-spin' />
+                            <Loader2 className='size-5 animate-spin' />
                         ) : (
-                            <Wand2 className='size-4 group-hover:rotate-12 transition-transform' />
+                            <Wand2 className='size-5 group-hover:rotate-12 transition-transform' />
                         )}
-                        {isGenerating ? "Magic in progress..." : "Enhance Writing"}
+                        <span>{isGenerating ? "Magically Writing..." : "Enhance with AI"}</span>
                     </button>
                 </div>
             </div>
 
             {/* Input Area */}
-            <div className='flex-1 flex flex-col gap-3 relative group'>
+            <div className='flex-1 flex flex-col gap-4 relative'>
                 <div className="flex justify-between items-end px-1">
-                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                        <Quote className="size-4 text-slate-400" />
-                        Summary Text
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Quote className="size-4 text-primary-accent" />
+                        Writer's Canvas
                     </label>
-                    <span className={`text-xs font-medium transition-colors ${data?.length > 400 ? 'text-amber-500' : 'text-slate-400'}`}>
-                        {data?.length || 0} / 500 chars
+                    <span className={`text-[10px] font-black tracking-[0.1em] transition-colors ${data?.length > 400 ? 'text-primary-accent' : 'text-slate-400'}`}>
+                        {data?.length || 0} / 500 CHARACTERS
                     </span>
                 </div>
 
@@ -79,23 +80,31 @@ const ProfessionalSummaryForm = ({ data, onChange, setResumeData }) => {
                     <textarea
                         value={data || ""}
                         onChange={(e) => onChange(e.target.value)}
-                        className='w-full p-5 min-h-[280px] text-sm leading-relaxed text-slate-700 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all resize-none shadow-sm placeholder:text-slate-300'
-                        placeholder='e.g. Creative and detail-oriented Full Stack Developer with 3 years of experience in building scalable web applications...'
+                        className='w-full p-6 md:p-8 min-h-[300px] text-base leading-relaxed text-slate-800 bg-white border border-slate-200 rounded-xl focus:ring-8 focus:ring-orange-500/5 focus:border-primary-accent outline-none transition-all resize-none shadow-xl shadow-slate-200/40 placeholder:text-slate-300 font-medium'
+                        placeholder='Start typing your story here...'
                     />
                     {/* Corner Accent */}
-                    <div className="absolute bottom-4 right-4 pointer-events-none">
-                        <div className="w-4 h-4 border-b-2 border-r-2 border-slate-200 rounded-br-lg group-focus-within:border-indigo-400 transition-colors"></div>
+                    <div className="absolute bottom-6 right-6 pointer-events-none opacity-20">
+                        <div className="w-6 h-6 border-b-4 border-r-4 border-slate-200 rounded-br-xl group-focus-within:border-primary-accent transition-colors"></div>
                     </div>
                 </div>
 
-                <div className="flex gap-3 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></div>
-                    <p className='text-xs text-slate-600 leading-relaxed'>
-                        <span className="font-semibold text-blue-700 block mb-0.5">Pro Tip</span>
-                        Keep it concise (3-4 sentences). Mention your years of experience, key industries, and one major achievement.
+                <div className="flex gap-4 bg-orange-50 p-6 rounded-xl border border-orange-100/50">
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary-accent mt-1.5 shrink-0 animate-pulse"></div>
+                    <p className='text-xs text-slate-700 leading-relaxed font-bold italic'>
+                        <span className="font-black text-primary-accent uppercase tracking-widest block mb-1">PRO STRATEGY</span>
+                        Mention 3-4 key industry skills and one major quantifiable achievement to stand out.
                     </p>
                 </div>
             </div>
+
+            <style jsx>{`
+          .text-primary-accent { color: #F95200; }
+          .bg-primary-accent { background-color: #F95200; }
+          .border-primary-accent { border-color: #F95200; }
+          .focus\\:border-primary-accent:focus { border-color: #F95200; }
+          .focus\\:ring-orange-500\\/5:focus { --tw-ring-color: rgba(249, 82, 0, 0.05); }
+      `}</style>
         </div>
     )
 }

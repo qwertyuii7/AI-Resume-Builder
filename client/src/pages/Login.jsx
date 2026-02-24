@@ -1,189 +1,219 @@
-import { Lock, Mail, User2Icon, ArrowRight, Loader2 } from 'lucide-react'
+import { Lock, Mail, User2Icon, ArrowRight, Loader2, ChevronLeft, ShieldCheck } from 'lucide-react'
 import React from 'react'
 import api from '../configs/api'
 import { useDispatch } from 'react-redux'
 import { login } from '../app/features/authSlice'
 import toast from 'react-hot-toast'
+import { Link, useNavigate } from 'react-router-dom'
+import Logo from '../components/Logo'
+import { GoogleLogin } from '@react-oauth/google'
 
 const Login = () => {
-
     const query = new URLSearchParams(window.location.search)
-    const urlState = query.get('state')
+    const redirectPath = query.get('redirect') || '/app'
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    const [state, setState] = React.useState(urlState || "login")
-    const [isLoading, setIsLoading] = React.useState(false); // Added for UI feedback
+    const [view, setView] = React.useState("identify") // identify, verify
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [email, setEmail] = React.useState('')
+    const [otp, setOtp] = React.useState('')
 
-    const [formData, setFormData] = React.useState({
-        name: '',
-        email: '',
-        password: ''
-    })
-
-    const handleSubmit = async (e) => {
+    // Handle sending OTP
+    const handleSendOTP = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            // Added a small artificial delay if api is too fast, just for the visual effect (optional)
-            // await new Promise(r => setTimeout(r, 800)); 
-
-            const { data } = await api.post(`/api/users/${state}`, formData)
-            dispatch(login(data))
-            localStorage.setItem('token', data.token)
+            const { data } = await api.post('/api/users/send-otp', { email });
             toast.success(data.message);
+            setView("verify");
         } catch (error) {
-            toast.error(error?.response?.data?.message || error.message);
+            toast.error(error?.response?.data?.message || "Failed to send OTP");
         } finally {
             setIsLoading(false);
         }
     }
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
-        setFormData(prev => ({ ...prev, [name]: value }))
+    // Handle OTP verification
+    const handleVerifyOTP = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            const { data } = await api.post('/api/users/verify-otp', { email, otp });
+            dispatch(login(data));
+            localStorage.setItem('token', data.token);
+            toast.success("Welcome back!");
+            navigate(redirectPath, { replace: true });
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Invalid OTP");
+        } finally {
+            setIsLoading(false);
+        }
     }
 
-    // Toggle function to reset form data when switching modes
-    const toggleState = () => {
-        setState(prev => prev === "login" ? "register" : "login");
-        setFormData({ name: '', email: '', password: '' });
+    // Handle Google Login Success
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setIsLoading(true);
+        try {
+            const { data } = await api.post('/api/users/google-login', {
+                credential: credentialResponse.credential
+            });
+            dispatch(login(data));
+            localStorage.setItem('token', data.token);
+            toast.success("Successfully logged in with Google");
+            navigate(redirectPath, { replace: true });
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Google login failed");
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
-        <div className='relative flex items-center justify-center min-h-screen overflow-hidden bg-slate-50'>
+        <div className='relative flex items-center justify-center min-h-screen overflow-hidden bg-white'>
 
-            {/* Animated Background Elements */}
-            <div className="absolute inset-0 w-full h-full bg-slate-50">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-green-200/40 blur-[100px] animate-pulse"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-200/40 blur-[100px] animate-pulse delay-1000"></div>
-                <div className="absolute top-[20%] right-[20%] w-[20%] h-[20%] rounded-full bg-purple-200/30 blur-[80px]"></div>
+            {/* Background Decorations */}
+            <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
+                <div className="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] rounded-full bg-[#FDE3D2] blur-[120px]"></div>
+                <div className="absolute bottom-[5%] -right-[5%] w-[45%] h-[45%] rounded-full bg-[#D1DCF8] blur-[130px]"></div>
+                <div className="absolute top-[20%] left-[25%] w-[30%] h-[30%] rounded-full bg-[#F1DEF0] blur-[100px]"></div>
             </div>
 
-            {/* Glassmorphism Card */}
-            <div className="relative z-10 w-full max-w-md p-8 sm:p-10 mx-4 transition-all duration-300 ease-in-out transform bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl">
+            <div className="absolute top-8 left-8 z-20">
+                <Link to="/" className="flex items-center gap-2 text-slate-500 hover:text-primary-accent transition-colors group">
+                    <ChevronLeft className="size-5 transition-transform group-hover:-translate-x-1" />
+                    <span className="font-bold">Back to Home</span>
+                </Link>
+            </div>
 
-                {/* Header */}
-                <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-xl bg-green-100 text-green-600">
-                        {state === 'login' ? <Lock size={24} /> : <User2Icon size={24} />}
-                    </div>
-                    <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
-                        {state === "login" ? "Welcome Back" : "Create Account"}
+            {/* Auth Card */}
+            <div className="relative z-10 w-full max-w-md p-10 mx-4 bg-white/70 backdrop-blur-2xl border border-white/40 shadow-2xl shadow-slate-200/50 rounded-2xl">
+
+                {/* Logo Area */}
+                <div className="flex flex-col items-center mb-10 text-center">
+                    <Logo className="scale-110 mb-8" />
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+                        {view === "identify" ? "Welcome back" : "Verify Email"}
                     </h1>
-                    <p className="text-slate-500 mt-2 text-sm">
-                        {state === "login" ? "Enter your credentials to access your account" : "Fill in the details below to get started"}
+                    <p className="text-slate-500 mt-2 font-medium">
+                        {view === "identify" ? "Sign in to continue your journey" : `Enter the 6-digit code sent to ${email}`}
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-
-                    {/* Name Input (Register Only) */}
-                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${state !== "login" ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'}`}>
-                        <div className="group relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <User2Icon className="h-5 w-5 text-slate-400 group-focus-within:text-green-500 transition-colors" />
-                            </div>
-                            <input
-                                type="text"
-                                name="name"
-                                placeholder="Full Name"
-                                className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 text-sm font-medium"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required={state === "register"}
+                {view === "identify" ? (
+                    <div className="space-y-6">
+                        {/* Google Auth - Top Priority */}
+                        <div className="w-full flex justify-center">
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => toast.error("Google Login Error")}
+                                useOneTap
+                                theme="filled_blue"
+                                shape="pill"
+                                width="320"
                             />
                         </div>
-                    </div>
 
-                    {/* Email Input */}
-                    <div className="group relative">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Mail className="h-5 w-5 text-slate-400 group-focus-within:text-green-500 transition-colors" />
-                        </div>
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="Email address"
-                            className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 text-sm font-medium"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
-                    {/* Password Input */}
-                    <div className="space-y-1">
-                        <div className="group relative">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-green-500 transition-colors" />
+                        <div className="relative py-4">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-slate-200"></span>
                             </div>
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="Password"
-                                className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 text-sm font-medium"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
-                        {state === 'login' && (
-                            <div className="flex justify-end">
-                                <button type="button" className="text-xs font-medium text-green-600 hover:text-green-700 hover:underline">
-                                    Forgot password?
-                                </button>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white/0 px-4 text-slate-400 font-bold tracking-widest backdrop-blur-sm">Or continue with email</span>
                             </div>
-                        )}
+                        </div>
+
+                        <form onSubmit={handleSendOTP} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-slate-700 ml-1">Email Address</label>
+                                <div className="group relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Mail className="h-5 w-5 text-slate-400 transition-colors group-focus-within:text-primary-accent" />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        placeholder="name@company.com"
+                                        className="block w-full pl-11 pr-4 py-3.5 bg-white border border-slate-100 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-primary-accent transition-all duration-300 font-medium"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="group relative w-full flex items-center justify-center py-4 px-4 bg-slate-900 rounded-xl text-white font-black text-lg hover:shadow-2xl hover:shadow-slate-900/30 active:scale-[0.98] transition-all duration-300 overflow-hidden"
+                            >
+                                <div className="relative flex items-center gap-2">
+                                    {isLoading ? (
+                                        <Loader2 className="animate-spin h-6 w-6 text-primary-accent" />
+                                    ) : (
+                                        <>
+                                            <span>Continue with OTP</span>
+                                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
+                                </div>
+                            </button>
+                        </form>
                     </div>
-
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="group relative w-full flex items-center justify-center py-3.5 px-4 border border-transparent rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-green-600/20 overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <div className="relative flex items-center gap-2">
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="animate-spin h-5 w-5" />
-                                    <span>Processing...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span>{state === "login" ? "Sign In" : "Create Account"}</span>
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </>
-                            )}
+                ) : (
+                    <form onSubmit={handleVerifyOTP} className="space-y-6">
+                        <div className="space-y-4">
+                            <div className="group relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <ShieldCheck className="h-5 w-5 text-slate-400 transition-colors group-focus-within:text-primary-accent" />
+                                </div>
+                                <input
+                                    type="text"
+                                    maxLength={6}
+                                    placeholder="Enter 6-digit OTP"
+                                    className="block w-full pl-11 pr-4 py-4 bg-white border border-slate-100 rounded-xl text-center text-2xl font-black tracking-[0.5em] text-slate-900 placeholder:text-slate-200 placeholder:tracking-normal focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-primary-accent transition-all duration-300"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+                            <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                Didn't receive code? <button type="button" onClick={handleSendOTP} className="text-primary-accent hover:underline">Resend</button>
+                            </p>
                         </div>
-                    </button>
 
-                    {/* Toggle Mode */}
-                    <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-slate-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-white/50 backdrop-blur text-slate-500">Or</span>
-                        </div>
-                    </div>
+                        <button
+                            type="submit"
+                            disabled={isLoading || otp.length !== 6}
+                            className="group relative w-full flex items-center justify-center py-4 px-4 bg-primary-accent rounded-xl text-white font-black text-lg hover:shadow-2xl hover:shadow-orange-500/30 active:scale-[0.98] transition-all duration-300 overflow-hidden"
+                        >
+                            <div className="relative flex items-center gap-2">
+                                {isLoading ? (
+                                    <Loader2 className="animate-spin h-6 w-6 text-white" />
+                                ) : (
+                                    <>
+                                        <span>Verify & Sign In</span>
+                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </div>
+                        </button>
 
-                    <p className="text-center text-sm text-slate-600">
-                        {state === "login" ? "Don't have an account?" : "Already have an account?"}
                         <button
                             type="button"
-                            onClick={toggleState}
-                            className="ml-1 font-bold text-green-600 hover:text-green-700 hover:underline focus:outline-none transition-colors"
+                            onClick={() => setView("identify")}
+                            className="w-full text-center text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
                         >
-                            {state === "login" ? "Sign up" : "Log in"}
+                            Use different email
                         </button>
-                    </p>
-                </form>
+                    </form>
+                )}
             </div>
 
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-                * { font-family: 'Poppins', sans-serif; }
+                .text-primary-accent { color: #F95200; }
+                .bg-primary-accent { background-color: #F95200; }
+                .shadow-orange-500\\/30 { --tw-shadow-color: rgba(249, 82, 0, 0.3); }
             `}</style>
         </div>
     )

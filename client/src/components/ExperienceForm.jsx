@@ -1,4 +1,4 @@
-import { Briefcase, Building2, Calendar, Loader2, Plus, Sparkles, Trash2, X } from 'lucide-react'
+import { Briefcase, Building2, Calendar, Loader2, MapPin, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import api from '../configs/api';
@@ -16,7 +16,8 @@ const ExperienceForm = ({ data, onChange }) => {
             start_date: "",
             end_date: "",
             description: "",
-            is_current: false
+            is_current: false,
+            location: ""
         };
         onChange([...data, newExperience])
     }
@@ -54,114 +55,112 @@ const ExperienceForm = ({ data, onChange }) => {
     }
 
     return (
-        <div className='max-w-3xl mx-auto space-y-8 pb-10'>
+        <div className='max-w-3xl mx-auto space-y-10 pb-16 font-sans'>
 
             {/* Header Section */}
-            <div className='flex items-end justify-between border-b border-slate-200 pb-4'>
-                <div className="space-y-1">
-                    <h3 className='text-2xl font-bold text-slate-800 flex items-center gap-2'>
-                        <Briefcase className="size-6 text-indigo-600" />
-                        Professional Experience
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-6'>
+                <div className="space-y-2">
+                    <h3 className='text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tight'>
+                        <div className="p-2.5 bg-orange-50 rounded-xl text-primary-accent shadow-sm">
+                            <Briefcase className="size-6" />
+                        </div>
+                        Work Experience
                     </h3>
-                    <p className='text-sm text-slate-500'>Highlight your career journey and key achievements.</p>
+                    <p className='text-sm font-medium text-slate-500 italic tracking-tight overflow-hidden'>Showcase your professional growth and impact.</p>
                 </div>
                 <button
                     onClick={addExperience}
-                    className='group flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5 transition-all'
+                    className='group w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3 bg-slate-900 text-white text-sm font-black rounded-xl hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-900/40 active:scale-95 transition-all'
                 >
-                    <Plus className='size-4 group-hover:rotate-90 transition-transform' />
-                    Add Position
+                    <Plus className='size-5 group-hover:rotate-90 transition-transform duration-300' />
+                    <span>Add Role</span>
                 </button>
             </div>
 
             {/* Empty State */}
             {data.length === 0 ? (
-                <div className='flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-slate-50 transition-colors cursor-pointer group' onClick={addExperience}>
-                    <div className="size-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform duration-300">
-                        <Briefcase className='size-8 text-slate-300 group-hover:text-indigo-500 transition-colors' />
+                <div className='flex flex-col items-center justify-center py-24 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/20 hover:bg-orange-50/30 hover:border-primary-accent/30 transition-all duration-500 cursor-pointer group' onClick={addExperience}>
+                    <div className="size-20 bg-white rounded-2xl flex items-center justify-center shadow-xl mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                        <Briefcase className='size-10 text-slate-200 group-hover:text-primary-accent transition-colors' />
                     </div>
-                    <p className='text-slate-600 font-medium'>No experience listed yet</p>
-                    <p className='text-slate-400 text-sm mt-1'>Click to add your first job role</p>
+                    <p className='text-slate-900 font-black text-lg tracking-tight'>No experience added yet</p>
+                    <p className='text-slate-400 text-sm mt-1 font-medium'>Click here to start documenting your career.</p>
                 </div>
             ) : (
-                <div className='space-y-6'>
+                <div className='space-y-8'>
                     {data.map((experience, index) => (
-                        <div key={index} className='group relative bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden'>
+                        <div key={index} className='group relative bg-white border border-slate-100 rounded-xl shadow-xl shadow-slate-200/30 hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 overflow-hidden'>
 
                             {/* Card Header / Delete Button */}
-                            <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
                                 <button
                                     onClick={() => removeExperience(index)}
-                                    className='p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors'
-                                    title="Remove this position"
+                                    className='p-3 text-slate-400 hover:text-white hover:bg-red-500 rounded-xl shadow-sm transition-all'
+                                    title="Delete Entry"
                                 >
-                                    <Trash2 className='size-4' />
+                                    <Trash2 className='size-5' />
                                 </button>
                             </div>
 
-                            <div className='p-6 space-y-5'>
+                            <div className='p-5 sm:p-8 md:p-10 space-y-8'>
                                 {/* Row 1: Title & Company */}
-                                <div className='grid md:grid-cols-2 gap-5'>
-                                    <div className='space-y-1.5'>
-                                        <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>Job Title</label>
-                                        <div className="relative">
-                                            <Briefcase className="absolute left-3 top-3 size-4 text-slate-400" />
+                                <div className='grid md:grid-cols-2 gap-6 md:gap-8'>
+                                    <div className='space-y-2.5'>
+                                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1'>Full Job Title</label>
+                                        <div className="relative group/input">
+                                            <Briefcase className="absolute left-4 top-4 size-5 text-slate-400 group-focus-within/input:text-primary-accent transition-colors" />
                                             <input
                                                 value={experience.position || ""}
                                                 onChange={(e) => updateExperience(index, "position", e.target.value)}
                                                 type="text"
-                                                placeholder='e.g. Senior Frontend Developer'
-                                                className='w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all'
+                                                placeholder='e.g. Lead Design Engineer'
+                                                className='w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-8 focus:ring-orange-500/5 focus:border-primary-accent outline-none transition-all shadow-sm'
                                             />
                                         </div>
                                     </div>
 
-                                    <div className='space-y-1.5'>
-                                        <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>Company</label>
-                                        <div className="relative">
-                                            <Building2 className="absolute left-3 top-3 size-4 text-slate-400" />
+                                    <div className='space-y-2.5'>
+                                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1'>Organization / Company</label>
+                                        <div className="relative group/input">
+                                            <Building2 className="absolute left-4 top-4 size-5 text-slate-400 group-focus-within/input:text-primary-accent transition-colors" />
                                             <input
                                                 value={experience.company || ""}
                                                 onChange={(e) => updateExperience(index, "company", e.target.value)}
                                                 type="text"
-                                                placeholder='e.g. Google'
-                                                className='w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all'
+                                                placeholder='e.g. SpaceX'
+                                                className='w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-8 focus:ring-orange-500/5 focus:border-primary-accent outline-none transition-all shadow-sm'
                                             />
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Row 2: Dates */}
-                                <div className='grid md:grid-cols-2 gap-5'>
-                                    <div className='grid grid-cols-2 gap-4'>
-                                        <div className='space-y-1.5'>
-                                            <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>Start Date</label>
-                                            <div className="relative">
-                                                <input
-                                                    value={experience.start_date || ""}
-                                                    onChange={(e) => updateExperience(index, "start_date", e.target.value)}
-                                                    type="month"
-                                                    className='w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all'
-                                                />
-                                            </div>
+                                <div className='grid md:grid-cols-2 gap-6 md:gap-8'>
+                                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                        <div className='space-y-2.5'>
+                                            <label className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1'>Joined In</label>
+                                            <input
+                                                value={experience.start_date || ""}
+                                                onChange={(e) => updateExperience(index, "start_date", e.target.value)}
+                                                type="month"
+                                                className='w-full px-4 py-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-8 focus:ring-orange-500/5 focus:border-primary-accent outline-none transition-all shadow-sm'
+                                            />
                                         </div>
 
-                                        <div className={`space-y-1.5 transition-opacity ${experience.is_current ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                            <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>End Date</label>
-                                            <div className="relative">
-                                                <input
-                                                    value={experience.end_date || ""}
-                                                    onChange={(e) => updateExperience(index, "end_date", e.target.value)}
-                                                    type="month"
-                                                    disabled={experience.is_current}
-                                                    className='w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all'
-                                                />
-                                            </div>
+                                        <div className={`space-y-2.5 transition-all duration-300 ${experience.is_current ? 'opacity-30 pointer-events-none grayscale' : 'opacity-100'}`}>
+                                            <label className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1'>Resigned In</label>
+                                            <input
+                                                value={experience.end_date || ""}
+                                                onChange={(e) => updateExperience(index, "end_date", e.target.value)}
+                                                type="month"
+                                                disabled={experience.is_current}
+                                                className='w-full px-4 py-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-8 focus:ring-orange-500/5 focus:border-primary-accent outline-none transition-all shadow-sm'
+                                            />
                                         </div>
                                     </div>
 
-                                    <div className='flex items-center md:pt-6'>
-                                        <label className='flex items-center gap-3 cursor-pointer group/check'>
+                                    <div className='flex items-center md:pt-8'>
+                                        <label className='flex items-center gap-4 cursor-pointer group/check'>
                                             <div className="relative">
                                                 <input
                                                     type="checkbox"
@@ -169,51 +168,73 @@ const ExperienceForm = ({ data, onChange }) => {
                                                     onChange={(e) => updateExperience(index, "is_current", e.target.checked)}
                                                     className="peer sr-only"
                                                 />
-                                                <div className="w-5 h-5 border-2 border-slate-300 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600"></div>
-                                                <svg className="absolute w-3 h-3 text-white left-1 top-1 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                                <div className="w-6 h-6 border-2 border-slate-200 rounded-lg transition-all peer-checked:bg-primary-accent peer-checked:border-primary-accent peer-checked:shadow-lg peer-checked:shadow-orange-500/30"></div>
+                                                <svg className="absolute w-4 h-4 text-white left-1 top-1 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4"><path d="M5 13l4 4L19 7" /></svg>
                                             </div>
-                                            <span className='text-sm font-medium text-slate-600 group-hover/check:text-indigo-600 transition-colors'>I currently work here</span>
+                                            <span className='text-sm font-black text-slate-500 group-hover/check:text-primary-accent transition-colors uppercase tracking-widest'>Presently Working</span>
                                         </label>
+                                    </div>
+
+                                    <div className='space-y-2.5'>
+                                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1'>Location</label>
+                                        <div className="relative group/input">
+                                            <MapPin className="absolute left-4 top-4 size-5 text-slate-400 group-focus-within/input:text-primary-accent transition-colors" />
+                                            <input
+                                                value={experience.location || ""}
+                                                onChange={(e) => updateExperience(index, "location", e.target.value)}
+                                                type="text"
+                                                placeholder='e.g. Mountain View, CA'
+                                                className='w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-8 focus:ring-orange-500/5 focus:border-primary-accent outline-none transition-all shadow-sm'
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Row 3: Description & AI */}
-                                <div className='space-y-2 pt-2'>
+                                <div className='space-y-4 pt-4'>
                                     <div className='flex items-center justify-between'>
-                                        <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>
-                                            Responsibilities & Achievements
+                                        <label className='text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1'>
+                                            Key Responsibilities & Projects
                                         </label>
 
                                         <button
                                             onClick={() => generateDescription(index)}
                                             disabled={generatingIndex === index || !experience.position || !experience.company}
-                                            className='flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full shadow-sm hover:shadow-md hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:shadow-none transition-all'
+                                            className='flex items-center gap-2 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest text-white bg-slate-900 rounded-full shadow-lg hover:shadow-2xl hover:bg-slate-800 hover:-translate-y-0.5 active:scale-95 disabled:opacity-30 disabled:scale-100 disabled:shadow-none transition-all'
                                         >
                                             {generatingIndex === index ? (
-                                                <Loader2 className='size-3 animate-spin' />
+                                                <Loader2 className='size-3.5 animate-spin text-orange-400' />
                                             ) : (
-                                                <Sparkles className='size-3 text-yellow-300' />
+                                                <Sparkles className='size-3.5 text-orange-400' />
                                             )}
-                                            {generatingIndex === index ? "Improving..." : "Enhance with AI"}
+                                            <span>{generatingIndex === index ? "Refining Text..." : "AI Intelligence"}</span>
                                         </button>
                                     </div>
 
                                     <textarea
                                         value={experience.description || ""}
                                         onChange={(e) => updateExperience(index, "description", e.target.value)}
-                                        rows={5}
-                                        className='w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm leading-relaxed text-slate-700 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all resize-none'
-                                        placeholder='• Led a team of 5 developers...&#10;• Increased system performance by 20%...&#10;• Managed project timelines using Agile methodology...'
+                                        rows={6}
+                                        className='w-full px-6 py-5 bg-white border border-slate-200 rounded-xl text-sm font-medium leading-relaxed text-slate-800 placeholder:text-slate-300 focus:ring-8 focus:ring-orange-500/5 focus:border-primary-accent outline-none transition-all resize-none shadow-sm'
+                                        placeholder='Describe your impact...'
                                     />
-                                    <p className="text-[10px] text-slate-400 text-right">
-                                        Tip: Use bullet points for better readability.
-                                    </p>
+                                    <div className="flex justify-end gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                                        <span>Pro-tip: Focus on metrics & results.</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
+
+            <style jsx>{`
+          .text-primary-accent { color: #F95200; }
+          .bg-primary-accent { background-color: #F95200; }
+          .border-primary-accent { border-color: #F95200; }
+          .focus\\:border-primary-accent:focus { border-color: #F95200; }
+          .focus\\:ring-orange-500\\/5:focus { --tw-ring-color: rgba(249, 82, 0, 0.05); }
+      `}</style>
         </div>
     )
 }

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Briefcase, ChevronLeft, ChevronRight, Download, Eye,
   EyeOff, FileText, FolderOpen, GraduationCap, LayoutTemplate,
-  Palette, Share2, Sparkles, User, Save, PenTool, Monitor
+  Palette, Share2, Sparkles, User, Save, PenTool, Monitor, Award, ArrowRight
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ import ExperienceForm from '../components/ExperienceForm';
 import EducationForm from '../components/EducationForm';
 import ProjectForm from '../components/ProjectForm';
 import SkillsForm from '../components/SkillsForm';
+import CertificatesForm from '../components/CertificatesForm';
 import ResumePreview from '../components/ResumePreview';
 import TemplateSelector from '../components/TemplateSelector';
 import ColorPicker from '../components/ColorPicker';
@@ -25,6 +26,9 @@ const ResumeBuilder = () => {
   const { token } = useSelector(state => state.auth);
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
+  const [mobilePreviewTab, setMobilePreviewTab] = useState('templates'); // 'templates' | 'accent'
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const navigate = useNavigate();
 
   const [resumeData, setResumeData] = useState({
     _id: '',
@@ -34,14 +38,14 @@ const ResumeBuilder = () => {
     experience: [],
     education: [],
     project: [],
-    skills: [],
+    skills: {},
+    certificates: {},
     template: "classic",
     accent_color: '#3B82F6',
     public: false
   });
 
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
-  const [removeBackground, setRemoveBackground] = useState(false);
 
   // Sections Configuration
   const sections = [
@@ -51,6 +55,22 @@ const ResumeBuilder = () => {
     { id: 'education', name: "Education", icon: GraduationCap, desc: "Academics" },
     { id: 'projects', name: "Projects", icon: FolderOpen, desc: "Key works" },
     { id: 'skills', name: "Skills", icon: Sparkles, desc: "Abilities" },
+    { id: 'certificates', name: "Certificates", icon: Award, desc: "Achievements" },
+  ];
+
+  const mobileTemplates = [
+    { id: 'classic', label: 'Classic' },
+    { id: 'modern', label: 'Modern' },
+    { id: 'minimal-image', label: 'Profile' },
+    { id: 'minimal', label: 'Minimal' },
+    { id: 'professional-academic', label: 'Professional' },
+    { id: 'technical-detailed', label: 'Detailed' },
+    { id: 'jakes-style', label: "Jake's" },
+    { id: 'two-column-purple', label: 'Two Column' },
+    { id: 'modern-teal', label: 'Modern Teal' },
+    { id: 'serif-classic', label: 'Serif Classic' },
+    { id: 'clean-blue', label: 'Clean Blue' },
+    { id: 'detailed-professional', label: 'Detailed Pro' },
   ];
 
   const activeSection = sections[activeSectionIndex];
@@ -58,6 +78,8 @@ const ResumeBuilder = () => {
   useEffect(() => {
     loadExistingResume();
   }, []);
+
+  const [isExporting, setIsExporting] = useState(false);
 
   const loadExistingResume = async () => {
     try {
@@ -73,6 +95,31 @@ const ResumeBuilder = () => {
     }
   };
 
+  const handleExportPDF = async () => {
+    try {
+      // 1. Check if user has downloads remaining
+      const { data } = await api.post('/api/users/track-download', {}, {
+        headers: { Authorization: token }
+      });
+
+      if (data.downloadCount) {
+        // Open the print dialog which allows users to save as PDF or print
+        setIsExporting(true);
+        // Use setTimeout to ensure the DOM is ready for printing
+        setTimeout(() => {
+          window.print();
+          setIsExporting(false);
+        }, 100);
+      }
+    } catch (error) {
+      if (error.response?.status === 403) {
+        setShowLimitModal(true);
+      } else {
+        toast.error(error.response?.data?.message || "Failed to generate PDF");
+      }
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -84,7 +131,7 @@ const ResumeBuilder = () => {
       const formData = new FormData();
       formData.append('resumeId', resumeId);
       formData.append('resumeData', JSON.stringify(updatedResumeData));
-      removeBackground && formData.append('removeBackground', "yes");
+      formData.append('removeBackground', resumeData.personal_info?.remove_background ? "yes" : "no");
 
       if (typeof resumeData.personal_info.image === 'object') {
         formData.append('image', resumeData.personal_info.image);
@@ -118,6 +165,7 @@ const ResumeBuilder = () => {
       toast.success(`Resume is now ${!resumeData.public ? 'Public' : 'Private'}`);
     } catch (error) {
       console.error(error);
+      toast.error("Failed to update visibility");
     }
   };
 
@@ -135,71 +183,52 @@ const ResumeBuilder = () => {
   // --- Render Helpers ---
   const renderForm = () => {
     switch (activeSection.id) {
-      case 'personal': return <PersonalInfoForm data={resumeData.personal_info} onChange={(d) => setResumeData(p => ({ ...p, personal_info: d }))} removeBackground={removeBackground} setRemoveBackground={setRemoveBackground} />;
+      case 'personal': return <PersonalInfoForm data={resumeData.personal_info} onChange={(d) => setResumeData(p => ({ ...p, personal_info: d }))} />;
       case 'summary': return <ProfessionalSummaryForm data={resumeData.professional_summary} onChange={(d) => setResumeData(p => ({ ...p, professional_summary: d }))} setResumeData={setResumeData} />;
       case 'experience': return <ExperienceForm data={resumeData.experience} onChange={(d) => setResumeData(p => ({ ...p, experience: d }))} />;
       case 'education': return <EducationForm data={resumeData.education} onChange={(d) => setResumeData(p => ({ ...p, education: d }))} />;
       case 'projects': return <ProjectForm data={resumeData.project} onChange={(d) => setResumeData(p => ({ ...p, project: d }))} />;
       case 'skills': return <SkillsForm data={resumeData.skills} onChange={(d) => setResumeData(p => ({ ...p, skills: d }))} />;
+      case 'certificates': return <CertificatesForm data={resumeData.certificates} onChange={(d) => setResumeData(p => ({ ...p, certificates: d }))} />;
       default: return null;
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
+    <div className="resume-builder-page flex flex-col h-screen bg-slate-50 overflow-hidden">
 
       {/* Top Header */}
-      <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 shrink-0 z-20">
-        <div className="flex items-center gap-3 lg:gap-4">
-          <Link to="/app" className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
-            <ArrowLeft className="size-5" />
+      <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-6 lg:px-10 shrink-0 z-30">
+        <div className="flex items-center gap-4 lg:gap-6">
+          <Link to="/app" className="group p-2.5 bg-slate-50 hover:bg-orange-50 rounded-xl text-slate-400 hover:text-primary-accent transition-all duration-300">
+            <ArrowLeft className="size-5 group-hover:-translate-x-1 transition-transform" />
           </Link>
-          <div className='pt-1 lg:pt-0'>
-            <h1 className="font-bold text-slate-800 text-sm lg:text-lg truncate max-w-[150px] lg:max-w-xs">{resumeData.title || "Untitled"}</h1>
-            <p className="hidden lg:block text-xs text-slate-500">Last edited just now</p>
+          <div>
+            <h1 className="font-black text-slate-900 text-lg lg:text-xl tracking-tight truncate max-w-[150px] lg:max-w-xs">{resumeData.title || "Untitled Resume"}</h1>
+            <p className="hidden lg:block text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Auto-saving enabled</p>
           </div>
         </div>
 
         {/* Mobile View Toggle */}
-        <div className="lg:hidden flex bg-slate-100 p-1 rounded-lg">
+        <div className="lg:hidden flex bg-slate-50 p-1.5 rounded-xl border border-slate-100">
           <button
             onClick={() => setActiveTab('editor')}
-            className={`p-1.5 rounded-md transition-all ${activeTab === 'editor' ? 'bg-white shadow text-slate-800' : 'text-slate-500'}`}
+            className={`p-2 rounded-lg transition-all ${activeTab === 'editor' ? 'bg-white shadow-md text-primary-accent' : 'text-slate-400'}`}
           >
-            <PenTool className="size-4" />
+            <PenTool className="size-5" />
           </button>
           <button
             onClick={() => setActiveTab('preview')}
-            className={`p-1.5 rounded-md transition-all ${activeTab === 'preview' ? 'bg-white shadow text-slate-800' : 'text-slate-500'}`}
+            className={`p-2 rounded-lg transition-all ${activeTab === 'preview' ? 'bg-white shadow-md text-primary-accent' : 'text-slate-400'}`}
           >
-            <Monitor className="size-4" />
+            <Monitor className="size-5" />
           </button>
         </div>
 
         <div className="flex items-center gap-2 lg:gap-3">
-          {resumeData.public && (
-            <button onClick={handleShare} className="hidden sm:flex p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Share">
-              <Share2 className="size-5" />
-            </button>
-          )}
-
-          <button onClick={changeResumeVisibility} className={`hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all ${resumeData.public ? 'text-green-600 bg-green-50' : 'text-slate-600 hover:bg-slate-100'}`}>
-            {resumeData.public ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-            <span className="hidden xl:inline">{resumeData.public ? 'Public' : 'Private'}</span>
-          </button>
-
-          <button onClick={() => window.print()} className="hidden sm:flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
-            <Download className="size-4" />
-            <span className="hidden xl:inline">PDF</span>
-          </button>
-
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-3 lg:px-5 py-2 lg:py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 disabled:opacity-70 transition-all shadow-lg shadow-slate-200"
-          >
-            {isSaving ? <Sparkles className="size-4 animate-spin" /> : <Save className="size-4" />}
-            <span className="hidden sm:inline">Save</span>
+          <button onClick={handleExportPDF} disabled={isExporting} className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-xl transition-all duration-300 disabled:opacity-50">
+            {isExporting ? <Sparkles className="size-4 animate-spin text-orange-400" /> : <Download className="size-4" />}
+            <span className="hidden sm:inline">{isExporting ? 'Generating...' : 'Export PDF'}</span>
           </button>
         </div>
       </header>
@@ -207,14 +236,12 @@ const ResumeBuilder = () => {
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden relative">
 
-        {/* LEFT PANEL: Editor 
-            Logic: Hidden on mobile if activeTab is 'preview'. Always visible on Desktop (lg).
-        */}
-        <div className={`w-full lg:w-[45%] xl:w-[40%] flex-col bg-white border-r border-slate-200 relative z-10 ${activeTab === 'editor' ? 'flex' : 'hidden lg:flex'}`}>
+        {/* LEFT PANEL: Editor */}
+        <div className={`left-editor-panel w-full lg:w-[45%] xl:w-[40%] flex flex-col bg-white border-r border-slate-200 relative z-10 ${activeTab === 'editor' ? 'flex' : 'hidden lg:flex'}`}>
 
           {/* Stepper Navigation */}
-          <div className="px-4 lg:px-6 py-4 overflow-x-auto border-b border-slate-100 no-scrollbar">
-            <div className="flex items-center min-w-max gap-3 lg:gap-4">
+          <div className="px-6 lg:px-8 py-4 lg:py-6 overflow-x-auto border-b border-slate-50 no-scrollbar">
+            <div className="flex items-center justify-center min-w-max gap-4 lg:gap-6">
               {sections.map((sec, idx) => {
                 const isActive = activeSectionIndex === idx;
                 const isCompleted = activeSectionIndex > idx;
@@ -223,12 +250,12 @@ const ResumeBuilder = () => {
                   <button
                     key={sec.id}
                     onClick={() => setActiveSectionIndex(idx)}
-                    className={`group flex flex-col items-center gap-2 min-w-[4rem] lg:min-w-[4.5rem] transition-all ${isActive ? 'opacity-100 scale-105' : 'opacity-60 hover:opacity-100'}`}
+                    className={`group flex flex-col items-center gap-3 min-w-[4rem] lg:min-w-[5rem] transition-all duration-300 ${isActive ? 'scale-110' : 'opacity-40 hover:opacity-100'}`}
                   >
-                    <div className={`size-9 lg:size-10 rounded-xl flex items-center justify-center transition-all ${isActive ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' : isCompleted ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                      <Icon className="size-4 lg:size-5" />
+                    <div className={`size-12 lg:size-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${isActive ? 'bg-primary-accent text-white shadow-xl shadow-orange-500/30' : isCompleted ? 'bg-orange-50 text-primary-accent' : 'bg-slate-50 text-slate-400'}`}>
+                      <Icon className="size-5 lg:size-6" />
                     </div>
-                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>{sec.name}</span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-slate-900' : 'text-slate-400'}`}>{sec.name}</span>
                   </button>
                 )
               })}
@@ -236,53 +263,96 @@ const ResumeBuilder = () => {
           </div>
 
           {/* Configuration Bar */}
-          <div className="px-4 lg:px-6 py-3 bg-slate-50/50 border-b border-slate-100 flex flex-wrap items-center gap-3 lg:gap-4">
+          <div className="hidden lg:flex px-4 lg:px-6 py-3 bg-slate-50/50 border-b border-slate-100 flex-wrap items-center gap-3 lg:gap-4 print:hidden print:py-0 print:px-0 print:border-0 print:bg-transparent">
             <div className="flex items-center gap-2">
-              <LayoutTemplate className="size-4 text-slate-400" />
               <TemplateSelector selectedTemplate={resumeData.template} onChange={(t) => setResumeData(prev => ({ ...prev, template: t }))} />
             </div>
             <div className="h-4 w-px bg-slate-200 hidden sm:block"></div>
             <div className="flex items-center gap-2">
-              <Palette className="size-4 text-slate-400" />
               <ColorPicker selectedColor={resumeData.accent_color} onChange={(c) => setResumeData(prev => ({ ...prev, accent_color: c }))} />
             </div>
           </div>
 
           {/* Form Area */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6 scroll-smooth">
+          <div className="flex-1 overflow-y-auto p-4 lg:p-6 scroll-smooth" data-lenis-prevent>
             <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {renderForm()}
             </div>
           </div>
 
           {/* Navigation Footer */}
-          <div className="p-4 border-t border-slate-200 bg-white flex justify-between items-center z-20">
+          <div className="p-6 border-t border-slate-100 bg-white/80 backdrop-blur-md flex justify-between items-center z-20">
             <button
               onClick={() => setActiveSectionIndex(prev => Math.max(0, prev - 1))}
               disabled={activeSectionIndex === 0}
-              className="flex items-center gap-2 px-3 lg:px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 rounded-lg transition-colors"
+              className="group flex items-center gap-2 px-6 py-3 text-sm font-bold text-slate-500 hover:text-primary-accent hover:bg-orange-50 disabled:opacity-30 rounded-xl transition-all duration-300"
             >
-              <ChevronLeft className="size-4" /> Back
+              <ChevronLeft className="size-5 group-hover:-translate-x-1 transition-transform" />
+              <span>Back</span>
             </button>
             <button
-              onClick={() => setActiveSectionIndex(prev => Math.min(sections.length - 1, prev + 1))}
-              disabled={activeSectionIndex === sections.length - 1}
-              className="flex items-center gap-2 px-4 lg:px-6 py-2 text-sm font-medium bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 rounded-lg shadow-md transition-all"
+              onClick={async () => {
+                await handleSave();
+                if (activeSectionIndex < sections.length - 1) {
+                  setActiveSectionIndex(prev => prev + 1);
+                }
+              }}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-8 py-3 text-sm font-black bg-primary-accent text-white hover:shadow-xl hover:shadow-orange-500/20 active:scale-95 disabled:opacity-50 rounded-xl shadow-lg transition-all duration-300"
             >
-              Next <span className='hidden sm:inline'>Step</span> <ChevronRight className="size-4" />
+              {isSaving ? (
+                <>
+                  <Sparkles className="size-4 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <span>{activeSectionIndex === sections.length - 1 ? 'Save Resume' : 'Save & Next'}</span>
+                  {activeSectionIndex < sections.length - 1 && <ChevronRight className="size-5" />}
+                </>
+              )}
             </button>
           </div>
         </div>
 
-        {/* RIGHT PANEL: Preview 
-            Logic: Hidden on mobile if activeTab is 'editor'. Always visible on Desktop (lg).
-        */}
-        <div className={`flex-1 bg-slate-100/80 items-center justify-center p-4 lg:p-8 overflow-hidden relative ${activeTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}>
-          <div className="absolute inset-0 pattern-grid-lg text-slate-200/50 opacity-20 pointer-events-none" />
+        {/* RIGHT PANEL: Preview */}
+        <div className={`preview-print-panel flex-1 bg-slate-100/80 flex items-center justify-center p-4 lg:p-8 overflow-hidden relative print:bg-white print:p-0 ${activeTab === 'preview' ? 'flex' : 'hidden lg:flex'}`}>
+          <div className="absolute inset-0 pattern-grid-lg text-slate-200/50 opacity-20 pointer-events-none print:hidden" />
 
-          <div className="h-full w-full flex flex-col items-center justify-start overflow-y-auto no-scrollbar pb-20">
-            <div className="scale-[0.5] sm:scale-[0.65] md:scale-[0.75] lg:scale-[0.85] xl:scale-95 origin-top transition-transform duration-300 w-fit">
-              <div className="shadow-2xl shadow-slate-400/20 bg-white">
+          <div className="preview-scroll-area h-full w-full flex flex-col items-center justify-start overflow-y-auto no-scrollbar pb-20 print:pb-0 print:overflow-visible" data-lenis-prevent>
+            <div className="lg:hidden sticky top-0 z-30 w-full max-w-md mx-auto mb-3 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm p-3 shadow-sm print:hidden">
+              <div className="flex items-center gap-2 bg-slate-50 rounded-lg p-1 mb-3">
+                <button
+                  onClick={() => setMobilePreviewTab('templates')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-black transition-all ${mobilePreviewTab === 'templates' ? 'bg-white text-primary-accent shadow-sm' : 'text-slate-500'}`}
+                >
+                  <LayoutTemplate className="size-4" />
+                  Templates
+                </button>
+                <button
+                  onClick={() => setMobilePreviewTab('accent')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-black transition-all ${mobilePreviewTab === 'accent' ? 'bg-white text-primary-accent shadow-sm' : 'text-slate-500'}`}
+                >
+                  <Palette className="size-4" />
+                  Accent Color
+                </button>
+              </div>
+
+              {mobilePreviewTab === 'templates' ? (
+                <TemplateSelector
+                  selectedTemplate={resumeData.template}
+                  onChange={(t) => setResumeData(prev => ({ ...prev, template: t }))}
+                />
+              ) : (
+                <div className="flex items-center gap-2 min-w-0">
+                  <Palette className="size-4 text-slate-400" />
+                  <ColorPicker selectedColor={resumeData.accent_color} onChange={(c) => setResumeData(prev => ({ ...prev, accent_color: c }))} />
+                </div>
+              )}
+            </div>
+
+            <div className="scale-wrapper relative z-0 scale-[0.38] sm:scale-[0.55] md:scale-[0.75] lg:scale-[0.85] xl:scale-95 origin-top transition-transform duration-300 w-fit print:scale-100 print:transform-none print:w-full">
+              <div className="shadow-2xl shadow-slate-400/20 bg-white print:shadow-none">
                 <ResumePreview data={resumeData} template={resumeData.template} accentColor={resumeData.accent_color} />
               </div>
             </div>
@@ -290,6 +360,92 @@ const ResumeBuilder = () => {
         </div>
 
       </div>
+
+      {/* Download Limit Modal */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-[32px] shadow-2xl border border-white/50 w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+            <div className="relative p-8 lg:p-10 flex flex-col items-center text-center space-y-6">
+              <div className="size-20 bg-orange-50 rounded-3xl flex items-center justify-center animate-bounce">
+                <Zap className="size-10 text-primary-accent" fill="currentColor" />
+              </div>
+
+              <div className="space-y-2">
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Download Limit Reached</h2>
+                <p className="text-slate-500 font-medium px-4">You've reached your free limit of 2 downloads. Upgrade to Pro for unlimited possibilities.</p>
+              </div>
+
+              <div className="w-full space-y-3 pt-4">
+                <button
+                  onClick={() => navigate('/subscription')}
+                  className="w-full py-4 bg-primary-accent text-white font-black rounded-2xl shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-95 flex items-center justify-center gap-2 group"
+                >
+                  <span>Go to Pro Plan</span>
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button
+                  onClick={() => setShowLimitModal(false)}
+                  className="w-full py-4 text-slate-400 font-bold hover:text-slate-600 transition-colors"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
+            <div className="bg-slate-50 px-8 py-4 border-t border-slate-100 italic text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">
+              Join 1,000+ happy users today
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media print {
+          html,
+          body {
+            height: auto !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+          }
+
+          .resume-builder-page {
+            display: block !important;
+            height: auto !important;
+            background: white !important;
+          }
+
+          .resume-builder-page > header,
+          .resume-builder-page .left-editor-panel {
+            display: none !important;
+          }
+
+          .resume-builder-page .preview-print-panel {
+            display: block !important;
+            width: 100% !important;
+            height: auto !important;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          .resume-builder-page .preview-scroll-area {
+            overflow: visible !important;
+            padding-bottom: 0 !important;
+          }
+
+          .resume-builder-page .scale-wrapper {
+            transform: none !important;
+            -webkit-transform: none !important;
+            scale: 1 !important;
+            width: auto !important;
+          }
+
+          .resume-builder-page .pattern-grid-lg {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

@@ -1,10 +1,15 @@
 import React from 'react'
 
-const Title = ({title, description}) => {
+const Title = ({ title, description }) => {
   return (
-    <div className='text-center mt-6 text-slate-700'>
-        <h2 className='text-3xl sm:text-4xl font-medium'>{title}</h2>
-        <p className='max-sm max-w-2xl mt-4 text-slate-500'>{description}</p>
+    <div className='flex flex-col items-center text-center mt-4'>
+      <h2 className='text-4xl md:text-5xl font-bold text-slate-900 tracking-tight'>{title}</h2>
+      <div className="h-1 w-16 bg-primary-accent rounded-full mt-6 mb-8"></div>
+      <p className='max-w-2xl text-lg text-slate-500 leading-relaxed font-medium'>{description}</p>
+
+      <style>{`
+          .bg-primary-accent { background-color: #F95200; }
+        `}</style>
     </div>
   )
 }
