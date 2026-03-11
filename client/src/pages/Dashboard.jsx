@@ -9,7 +9,8 @@ import {
   UploadCloud,
   X,
   FileUp,
-  Sparkles
+  Sparkles,
+  ClipboardList
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
@@ -178,7 +179,7 @@ const Dashboard = () => {
         </div>
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <button
             onClick={() => setShowCreateResume(true)}
             className="group relative overflow-hidden bg-white p-10 rounded-xl border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1 transition-all duration-500 text-left"
@@ -209,6 +210,25 @@ const Dashboard = () => {
               </div>
               <h3 className="text-2xl font-black text-white tracking-tight">Import PDF</h3>
               <p className="text-slate-400 mt-2 text-base font-medium">Let our AI extract and polish your existing resume.</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate('/app/ats-analyzer')}
+            className="group relative overflow-hidden bg-white p-10 rounded-xl border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-500 text-left"
+          >
+            <div className="absolute -bottom-16 -left-12 w-48 h-48 bg-[#DBFCE7] rounded-full blur-3xl opacity-0 group-hover:opacity-70 transition-opacity duration-700"></div>
+            <div className="relative z-10 flex items-start justify-between">
+              <div>
+                <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:rotate-6 transition-transform shadow-sm">
+                  <ClipboardList className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight">ATS Analyzer</h3>
+                <p className="text-slate-500 mt-2 text-base font-medium">Compare resume text with a role and get a compatibility score in JSON.</p>
+              </div>
+              <div className="bg-slate-50 p-2.5 rounded-xl opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                <ArrowRightIcon className="w-6 h-6 text-emerald-600" />
+              </div>
             </div>
           </button>
         </div>

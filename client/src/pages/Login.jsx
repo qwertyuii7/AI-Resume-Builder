@@ -18,6 +18,10 @@ const Login = () => {
     const [isLoading, setIsLoading] = React.useState(false);
     const [email, setEmail] = React.useState('')
     const [otp, setOtp] = React.useState('')
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const enableGoogleOnLocalhost = import.meta.env.VITE_ENABLE_GOOGLE_LOCALHOST === 'true';
+    const showGoogleLogin = Boolean(googleClientId) && (!isLocalhost || enableGoogleOnLocalhost);
 
     // Handle sending OTP
     const handleSendOTP = async (e) => {
@@ -104,14 +108,19 @@ const Login = () => {
                     <div className="space-y-6">
                         {/* Google Auth - Top Priority */}
                         <div className="w-full flex justify-center">
-                            <GoogleLogin
-                                onSuccess={handleGoogleSuccess}
-                                onError={() => toast.error("Google Login Error")}
-                                useOneTap
-                                theme="filled_blue"
-                                shape="pill"
-                                width="320"
-                            />
+                            {showGoogleLogin ? (
+                                <GoogleLogin
+                                    onSuccess={handleGoogleSuccess}
+                                    onError={() => toast.error("Google Login Error")}
+                                    theme="filled_blue"
+                                    shape="pill"
+                                    width="320"
+                                />
+                            ) : (
+                                <p className="text-xs text-center text-slate-500">
+                                    Google login is unavailable in this environment. Add <code>VITE_GOOGLE_CLIENT_ID</code> and authorize this origin in Google Cloud, or set <code>VITE_ENABLE_GOOGLE_LOCALHOST=true</code> for local testing.
+                                </p>
+                            )}
                         </div>
 
                         <div className="relative py-4">

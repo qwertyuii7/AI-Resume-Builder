@@ -9,12 +9,12 @@ const ProfessionalSummaryForm = ({ data, onChange, setResumeData }) => {
     const [isGenerating, setIsGenerating] = useState(false);
 
     const generateSummary = async () => {
-        if (!data) return toast.error("Please write a rough draft first");
+        const summaryText = data?.trim();
+        if (!summaryText) return toast.error("Please write a rough draft first");
         try {
             setIsGenerating(true);
-            const prompt = `enhance professional summary "${data}"`
-            const response = await api.post('/api/ai/enhance-pro-sum', { userContent: prompt }, {
-                headers: { Authorization: token }
+            const response = await api.post('/api/ai/enhance-pro-sum', { userContent: summaryText }, {
+                headers: { Authorization: token || localStorage.getItem('token') }
             })
             setResumeData(prev => ({ ...prev, professional_summary: response.data.enhanceContent }))
             toast.success("Summary enhanced successfully!");

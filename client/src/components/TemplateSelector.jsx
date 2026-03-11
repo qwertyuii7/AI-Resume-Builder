@@ -40,10 +40,6 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
     }, [isOpen]);
 
     const templates = [
-        { id: "classic", name: "Classic", type: "Standard" },
-        { id: "modern", name: "Modern", type: "Sidebar" },
-        { id: "minimal-image", name: "Profile", type: "Creative" },
-        { id: "minimal", name: "Minimal", type: "Clean" },
         { id: "professional-academic", name: "Professional", type: "Academic" },
         { id: "technical-detailed", name: "Detailed", type: "Technical" },
         { id: "jakes-style", name: "Jake's", type: "ATS Optimized" },
@@ -60,6 +56,10 @@ const TemplateSelector = ({ selectedTemplate, onChange }) => {
         { id: "serif-classic", name: "Serif Classic", type: "Classic" },
         { id: "clean-blue", name: "Clean Blue", type: "Professional" },
         { id: "detailed-professional", name: "Detailed Pro", type: "Technical" },
+        { id: "classic", name: "Classic", type: "Standard" },
+        { id: "modern", name: "Modern", type: "Sidebar" },
+        { id: "minimal-image", name: "Profile", type: "Creative" },
+        { id: "minimal", name: "Minimal", type: "Clean" },
     ];
 
     // Helper to render a mini CSS representation of the resume layout

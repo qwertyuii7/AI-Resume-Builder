@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, Briefcase, ChevronLeft, ChevronRight, Download, Eye,
   EyeOff, FileText, FolderOpen, GraduationCap, LayoutTemplate,
-  Palette, Share2, Sparkles, User, Save, PenTool, Monitor, Award, ArrowRight
+  Palette, Share2, Sparkles, User, Save, PenTool, Monitor, Award
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -27,8 +27,6 @@ const ResumeBuilder = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
   const [mobilePreviewTab, setMobilePreviewTab] = useState('templates'); // 'templates' | 'accent'
-  const [showLimitModal, setShowLimitModal] = useState(false);
-  const navigate = useNavigate();
 
   const [resumeData, setResumeData] = useState({
     _id: '',
@@ -59,10 +57,6 @@ const ResumeBuilder = () => {
   ];
 
   const mobileTemplates = [
-    { id: 'classic', label: 'Classic' },
-    { id: 'modern', label: 'Modern' },
-    { id: 'minimal-image', label: 'Profile' },
-    { id: 'minimal', label: 'Minimal' },
     { id: 'professional-academic', label: 'Professional' },
     { id: 'technical-detailed', label: 'Detailed' },
     { id: 'jakes-style', label: "Jake's" },
@@ -71,6 +65,10 @@ const ResumeBuilder = () => {
     { id: 'serif-classic', label: 'Serif Classic' },
     { id: 'clean-blue', label: 'Clean Blue' },
     { id: 'detailed-professional', label: 'Detailed Pro' },
+    { id: 'classic', label: 'Classic' },
+    { id: 'modern', label: 'Modern' },
+    { id: 'minimal-image', label: 'Profile' },
+    { id: 'minimal', label: 'Minimal' },
   ];
 
   const activeSection = sections[activeSectionIndex];
@@ -97,26 +95,14 @@ const ResumeBuilder = () => {
 
   const handleExportPDF = async () => {
     try {
-      // 1. Check if user has downloads remaining
-      const { data } = await api.post('/api/users/track-download', {}, {
-        headers: { Authorization: token }
-      });
-
-      if (data.downloadCount) {
-        // Open the print dialog which allows users to save as PDF or print
-        setIsExporting(true);
-        // Use setTimeout to ensure the DOM is ready for printing
-        setTimeout(() => {
-          window.print();
-          setIsExporting(false);
-        }, 100);
-      }
+      // Open the print dialog to save as PDF or print.
+      setIsExporting(true);
+      setTimeout(() => {
+        window.print();
+        setIsExporting(false);
+      }, 100);
     } catch (error) {
-      if (error.response?.status === 403) {
-        setShowLimitModal(true);
-      } else {
-        toast.error(error.response?.data?.message || "Failed to generate PDF");
-      }
+      toast.error(error.response?.data?.message || "Failed to generate PDF");
     }
   };
 
@@ -360,44 +346,6 @@ const ResumeBuilder = () => {
         </div>
 
       </div>
-
-      {/* Download Limit Modal */}
-      {showLimitModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-[32px] shadow-2xl border border-white/50 w-full max-w-md overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
-            <div className="relative p-8 lg:p-10 flex flex-col items-center text-center space-y-6">
-              <div className="size-20 bg-orange-50 rounded-3xl flex items-center justify-center animate-bounce">
-                <Zap className="size-10 text-primary-accent" fill="currentColor" />
-              </div>
-
-              <div className="space-y-2">
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Download Limit Reached</h2>
-                <p className="text-slate-500 font-medium px-4">You've reached your free limit of 2 downloads. Upgrade to Pro for unlimited possibilities.</p>
-              </div>
-
-              <div className="w-full space-y-3 pt-4">
-                <button
-                  onClick={() => navigate('/subscription')}
-                  className="w-full py-4 bg-primary-accent text-white font-black rounded-2xl shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-95 flex items-center justify-center gap-2 group"
-                >
-                  <span>Go to Pro Plan</span>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-                <button
-                  onClick={() => setShowLimitModal(false)}
-                  className="w-full py-4 text-slate-400 font-bold hover:text-slate-600 transition-colors"
-                >
-                  Maybe Later
-                </button>
-              </div>
-            </div>
-            <div className="bg-slate-50 px-8 py-4 border-t border-slate-100 italic text-[10px] font-bold text-slate-400 text-center uppercase tracking-widest">
-              Join 1,000+ happy users today
-            </div>
-          </div>
-        </div>
-      )}
-
       <style>{`
         @media print {
           html,

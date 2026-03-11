@@ -7,9 +7,6 @@ const userSchema = new mongoose.Schema({
     otp: { type: String },
     otpExpires: { type: Date },
     role: { type: String, default: "Member" },
-    downloadCount: { type: Number, default: 0 },
-    isSubscribed: { type: Boolean, default: false },
-    resumeLimit: { type: Number, default: 2 },
 }, { timestamps: true })
 
 const User = mongoose.model("User", userSchema);

@@ -16,7 +16,7 @@ Create `client/.env`:
 ```env
 VITE_BASE_URL=http://localhost:3000/api
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
-VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
+VITE_ENABLE_GOOGLE_LOCALHOST=false
 ```
 
 ## Install and Run
@@ -38,10 +38,9 @@ Important: backend expects raw token in `Authorization` header (not `Bearer <tok
 
 ## Main API Groups Used by Frontend
 
-- `/users` - OTP login, Google login, current user, user resumes, download tracking
+- `/users` - OTP login, Google login, current user, user resumes
 - `/resumes` - create, update, delete, get by id, public resumes, clone public resume
 - `/ai` - enhance summary, enhance job description, upload/import resume text
-- `/payments` - create order and verify payment
 - `/contact` - send contact form message
 - `/admin` - user and template management (admin only)
 
@@ -68,4 +67,3 @@ npm run dev
 - `Network Error` / CORS: ensure backend is running and CORS allows `http://localhost:5173`.
 - `401 Unauthorized`: login first and verify `token` exists in `localStorage`.
 - Google login issues: verify `VITE_GOOGLE_CLIENT_ID` matches backend `GOOGLE_CLIENT_ID`.
-- Payment issues: verify `VITE_RAZORPAY_KEY_ID` and backend Razorpay keys are configured.

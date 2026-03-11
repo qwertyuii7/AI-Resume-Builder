@@ -3,17 +3,32 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+const getMailerConfig = () => {
+    const user = process.env.EMAIL_USER || process.env.SMTP_EMAIL;
+    const pass = process.env.EMAIL_PASS || process.env.SMTP_PASSWORD;
+    const service = process.env.SMTP_SERVICE || 'gmail';
+
+    if (!user || !pass) {
+        throw new Error('Email service is not configured. Set EMAIL_USER/EMAIL_PASS or SMTP_EMAIL/SMTP_PASSWORD in server/.env');
     }
-});
+
+    return { user, pass, service };
+};
+
+const createTransporter = () => {
+    const { user, pass, service } = getMailerConfig();
+    return nodemailer.createTransport({
+        service,
+        auth: { user, pass }
+    });
+};
 
 export const sendOTP = async (email, otp) => {
+    const { user } = getMailerConfig();
+    const transporter = createTransporter();
+
     const mailOptions = {
-        from: `AI Resume Builder <${process.env.EMAIL_USER}>`,
+        from: `AI Resume Builder <${user}>`,
         to: email,
         subject: 'Your Login OTP - AI Resume Builder',
         html: `

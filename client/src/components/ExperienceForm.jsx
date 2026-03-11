@@ -41,13 +41,24 @@ const ExperienceForm = ({ data, onChange }) => {
         }
 
         setGeneratingIndex(index);
-        const prompt = `enhance this job description ${experience.description} for the position of ${experience.position} at ${experience.company}.`
         try {
-            const { data } = await api.post('/api/ai/enhance-job-desc', { userContent: prompt }, { headers: { Authorization: token } })
+            const { data } = await api.post('/api/ai/enhance-job-desc', {
+                userContent: (experience.description || '').trim(),
+                position: (experience.position || '').trim(),
+                company: (experience.company || '').trim(),
+                location: (experience.location || '').trim()
+            }, {
+                headers: { Authorization: token || localStorage.getItem('token') }
+            })
+
+            if (!data?.enhancedContent) {
+                throw new Error('No enhanced content returned');
+            }
+
             updateExperience(index, "description", data.enhancedContent);
-            toast.success(data.message);
+            toast.success(data.message || 'Job description enhanced successfully');
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error?.response?.data?.message || error.message || 'Failed to enhance job description');
         }
         finally {
             setGeneratingIndex(-1);

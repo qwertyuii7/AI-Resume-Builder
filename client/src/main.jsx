@@ -10,6 +10,11 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const enableGoogleOnLocalhost = import.meta.env.VITE_ENABLE_GOOGLE_LOCALHOST === 'true';
+const shouldEnableGoogle = Boolean(googleClientId) && (!isLocalhost || enableGoogleOnLocalhost);
+
 // Initialize Lenis
 const lenis = new Lenis({
   duration: 1.2,
@@ -30,10 +35,16 @@ requestAnimationFrame(raf);
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <Provider store={store}>                 {/* ✅ wrap everything inside Provider */}
+    {shouldEnableGoogle ? (
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </GoogleOAuthProvider>
+    ) : (
+      <Provider store={store}>
         <App />
       </Provider>
-    </GoogleOAuthProvider>
+    )}
   </BrowserRouter>
 );

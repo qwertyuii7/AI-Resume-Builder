@@ -24,10 +24,6 @@ const AdminDashboard = () => {
     const [selectedTemplate, setSelectedTemplate] = useState('classic');
 
     const AVAILABLE_TEMPLATES = [
-        { id: 'classic', label: 'Classic' },
-        { id: 'modern', label: 'Modern' },
-        { id: 'minimal-image', label: 'Profile' },
-        { id: 'minimal', label: 'Minimal' },
         { id: 'professional-academic', label: 'Professional' },
         { id: 'technical-detailed', label: 'Detailed' },
         { id: 'jakes-style', label: "Jake's" },
@@ -44,6 +40,10 @@ const AdminDashboard = () => {
         { id: 'serif-classic', label: 'Serif Classic' },
         { id: 'clean-blue', label: 'Clean Blue' },
         { id: 'detailed-professional', label: 'Detailed Pro' },
+        { id: 'classic', label: 'Classic' },
+        { id: 'modern', label: 'Modern' },
+        { id: 'minimal-image', label: 'Profile' },
+        { id: 'minimal', label: 'Minimal' },
     ];
 
     useEffect(() => {

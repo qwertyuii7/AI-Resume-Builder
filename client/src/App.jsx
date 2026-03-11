@@ -12,7 +12,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import TemplatesPage from './pages/TemplatesPage'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsConditions from './pages/TermsConditions'
-import Subscription from './pages/Subscription'
+import AtsAnalyzer from './pages/AtsAnalyzer'
 import ScrollToTop from './components/ScrollToTop'
 import { useDispatch } from 'react-redux'
 import api from './configs/api'
@@ -76,6 +76,7 @@ const App = () => {
           <Route index element={<Dashboard />} />
           <Route path='builder/:resumeId' element={<ResumeBuilder />} />
           <Route path='public/:resumeId/use' element={<PublicResumeImport />} />
+          <Route path='ats-analyzer' element={<AtsAnalyzer />} />
         </Route>
 
         <Route path='view/:resumeId' element={<Preview />} />
@@ -83,7 +84,6 @@ const App = () => {
         <Route path='templates' element={<TemplatesPage />} />
         <Route path='privacy' element={<PrivacyPolicy />} />
         <Route path='terms' element={<TermsConditions />} />
-        <Route path='subscription' element={<Subscription />} />
 
       </Routes>
     </>

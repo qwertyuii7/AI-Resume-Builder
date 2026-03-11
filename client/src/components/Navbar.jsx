@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { logout } from '../app/features/authSlice';
-import { LogOut, User, Menu, X, Home, Layout, Mail, Zap, HelpCircle } from 'lucide-react';
+import { LogOut, User, Menu, X, Home, Layout, Mail, Zap, HelpCircle, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from './Logo';
 
@@ -24,6 +24,7 @@ const Navbar = () => {
     const navLinks = [
         { name: 'Home', path: '/#home', icon: Home },
         { name: 'Features', path: '/#features', icon: Zap },
+        { name: 'ATS Analyzer', path: '/app/ats-analyzer', icon: ClipboardList },
         { name: 'Templates', path: '/templates', icon: Layout },
         { name: 'FAQ', path: '/#faq', icon: HelpCircle },
         { name: 'Contact', path: '/contact', icon: Mail }

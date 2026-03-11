@@ -7,7 +7,6 @@ import resumeRouter from './routes/resume.routes.js';
 import aiRouter from './routes/ai.routes.js';
 import contactRouter from './routes/contact.routes.js';
 import adminRouter from './routes/admin.routes.js';
-import paymentRouter from './routes/payment.routes.js';
 
 const app = express();
 
@@ -29,7 +28,6 @@ app.use('/api/resumes', resumeRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/admin', adminRouter);
-app.use('/api/payments', paymentRouter);
 
 
 app.listen(PORT, () => {

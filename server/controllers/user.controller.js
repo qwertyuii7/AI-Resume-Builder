@@ -13,13 +13,13 @@ const generateToken = (userId) => {
 import { OAuth2Client } from 'google-auth-library';
 import { sendOTP } from '../configs/nodemailer.js';
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || undefined);
 
 // Controller for sending OTP to email
 // POST: /api/users/send-otp
 export const sendLoginOTP = async (req, res) => {
     try {
-        const { email } = req.body;
+        const email = req.body?.email?.trim()?.toLowerCase();
 
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
@@ -59,7 +59,8 @@ export const sendLoginOTP = async (req, res) => {
 // POST: /api/users/verify-otp
 export const verifyOTP = async (req, res) => {
     try {
-        const { email, otp } = req.body;
+        const email = req.body?.email?.trim()?.toLowerCase();
+        const otp = req.body?.otp?.toString()?.trim();
 
         if (!email || !otp) {
             return res.status(400).json({ message: "Email and OTP are required" });
@@ -90,6 +91,16 @@ export const verifyOTP = async (req, res) => {
 export const googleLogin = async (req, res) => {
     try {
         const { credential } = req.body;
+
+        if (!credential) {
+            return res.status(400).json({ message: 'Missing Google credential token' });
+        }
+
+        if (!process.env.GOOGLE_CLIENT_ID) {
+            return res.status(500).json({
+                message: 'Google login is not configured on server. Add GOOGLE_CLIENT_ID to server/.env'
+            });
+        }
 
         const ticket = await client.verifyIdToken({
             idToken: credential,
@@ -157,37 +168,6 @@ export const getUsersResumes = async (req, res) => {
         const resumes = await Resume.find({ userId, isDraft: false }).sort({ updatedAt: -1 });
         return res.status(200).json({ resumes });
 
-    } catch (error) {
-        return res.status(400).json({ message: error.message });
-    }
-}
-
-// Controller for tracking resume downloads
-// POST: /api/users/track-download
-export const trackDownload = async (req, res) => {
-    try {
-        const userId = req.userId;
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        if (user.downloadCount >= user.resumeLimit) {
-            return res.status(403).json({
-                message: "Download limit reached. Please upgrade your plan.",
-                limitReached: true
-            });
-        }
-
-        user.downloadCount += 1;
-        await user.save();
-
-        return res.status(200).json({
-            message: "Download tracked successfully",
-            downloadCount: user.downloadCount,
-            user
-        });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
