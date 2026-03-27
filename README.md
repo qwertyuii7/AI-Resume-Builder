@@ -66,7 +66,7 @@ Backend runs on `http://localhost:3000`.
 Create `client/.env`:
 
 ```env
-VITE_BASE_URL=http://localhost:3000/api
+VITE_BASE_URL=http://localhost:3000
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 VITE_ENABLE_GOOGLE_LOCALHOST=false
 ```
