@@ -13,7 +13,9 @@ import TemplatesPage from './pages/TemplatesPage'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsConditions from './pages/TermsConditions'
 import AtsAnalyzer from './pages/AtsAnalyzer'
+import AIResumeStudio from './pages/AIResumeStudio'
 import ScrollToTop from './components/ScrollToTop'
+import FloatingChatbot from './components/FloatingChatbot'
 import { useDispatch } from 'react-redux'
 import api from './configs/api'
 import { login, setlLoading } from './app/features/authSlice'
@@ -82,10 +84,12 @@ const App = () => {
         <Route path='view/:resumeId' element={<Preview />} />
         <Route path='admin' element={<AdminDashboard />} />
         <Route path='templates' element={<TemplatesPage />} />
+        <Route path='ai-studio' element={<AIResumeStudio />} />
         <Route path='privacy' element={<PrivacyPolicy />} />
         <Route path='terms' element={<TermsConditions />} />
 
       </Routes>
+      <FloatingChatbot />
     </>
   )
 }

@@ -5,7 +5,7 @@ const systemRouter = express.Router();
 const REQUIRED_ENV_KEYS = [
   'MONGODB_URI',
   'JWT_SECRET',
-  'OPENAI_API_KEY'
+  'GEMINI_API_KEY'
 ];
 
 systemRouter.get('/runtime-status', (req, res) => {

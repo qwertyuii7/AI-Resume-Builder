@@ -179,7 +179,7 @@ const Dashboard = () => {
         </div>
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <button
             onClick={() => setShowCreateResume(true)}
             className="group relative overflow-hidden bg-white p-10 rounded-xl border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-orange-500/10 hover:-translate-y-1 transition-all duration-500 text-left"
@@ -210,6 +210,20 @@ const Dashboard = () => {
               </div>
               <h3 className="text-2xl font-black text-white tracking-tight">Import PDF</h3>
               <p className="text-slate-400 mt-2 text-base font-medium">Let our AI extract and polish your existing resume.</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate('/ai-studio')}
+            className="group relative overflow-hidden bg-gradient-to-br from-blue-600 to-purple-600 p-10 rounded-xl shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-1 transition-all duration-500 text-left"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600 opacity-0 group-hover:opacity-20 transition-opacity duration-700"></div>
+            <div className="relative z-10">
+              <div className="w-16 h-16 bg-white/20 text-white rounded-xl flex items-center justify-center mb-6 backdrop-blur-md group-hover:scale-110 transition-transform shadow-lg">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-black text-white tracking-tight">AI Resume Studio</h3>
+              <p className="text-blue-100 mt-2 text-base font-medium">Build resumes with GitHub integration and AI power.</p>
             </div>
           </button>
 

@@ -74,9 +74,9 @@ const Hero = () => {
                     <Link to="/templates" className="px-10 py-5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all active:scale-95">
                         View Examples
                     </Link>
-                    <a href="/resume-studio/index.html" className="px-10 py-5 bg-brand-peach text-primary-accent font-bold rounded-xl hover:brightness-95 transition-all active:scale-95">
+                    <Link to="/ai-studio" className="px-10 py-5 bg-brand-peach text-primary-accent font-bold rounded-xl hover:brightness-95 transition-all active:scale-95">
                         Open Resume Studio
-                    </a>
+                    </Link>
                 </motion.div>
             </main>
 

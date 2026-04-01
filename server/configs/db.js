@@ -2,12 +2,13 @@ import mongoose from "mongoose";
 
 const connectDB = async () => {
     try {
-        mongoose.connection.on("connected", ()=> {console.log("Data base connected successfully")})
+        mongoose.connection.on("connected", ()=> {console.log("Database connected successfully")})
         let mongoDBUri = process.env.MONGODB_URI;
         const projectName = "resume-builder";
 
         if(!mongoDBUri) {
-            throw new Error("MongoDB URI environment varible not set")
+            console.log("MongoDB URI not set - running without database");
+            return;
         }
 
         if(mongoDBUri.endsWith('/')) {
@@ -16,7 +17,7 @@ const connectDB = async () => {
 
         await mongoose.connect(`${mongoDBUri}/${projectName}`)
     } catch (error) {
-        console.error("Error connecting to Mongo DB", error)
+        console.log("Error connecting to MongoDB - running without database:", error.message)
     }
 }
 
